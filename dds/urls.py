@@ -1,9 +1,10 @@
 from django.urls import path
 
-from dds_manager.dds.apps import DdsConfig
-from .views import TransactionListView, ProductCreateView, TransactionDetailView, TransactionUpdateView, TransactionDeleteView
 
-app_name = DdsConfig.name
+from .views import TransactionListView, ProductCreateView, TransactionDetailView, TransactionUpdateView, \
+    TransactionDeleteView
+
+app_name = 'dds'
 
 urlpatterns = [
     path('dds/', TransactionListView.as_view(), name='transaction_list'),

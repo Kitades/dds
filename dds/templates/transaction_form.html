@@ -1,10 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+% extends "translation_list.html" %}
 
-</body>
-</html>
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{% if form.instance.pk %}Редактирование{% else %}Создание{% endif %} транзакции</h2>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label class="form-label">Дата</label>
+                    {{ form.date }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Статус*</label>
+                    {{ form.status }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Тип*</label>
+                    {{ form.type }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Сумма (руб)*</label>
+                    {{ form.amount }}
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Категория*</label>
+                    {{ form.category }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Подкатегория*</label>
+                    {{ form.subcategory }}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Комментарий</label>
+                {{ form.comment }}
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Отмена</a>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+{% endblock %}
