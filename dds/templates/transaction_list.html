@@ -1,38 +1,76 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Управление ДДС</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .navbar { margin-bottom: 20px; }
-        .filter-card { margin-bottom: 20px; }
-    </style>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'transaction_list' %}">Управление ДДС</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'transaction_list' %}">Транзакции</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'manage_references' %}">Справочники</a>
-                    </li>
-                </ul>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card filter-card">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">Дата от</label>
+                    <input type="date" name="date_from" class="form-control" value="{{ filters.date_from }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Дата до</label>
+                    <input type="date" name="date_to" class="form-control" value="{{ filters.date_to }}">
+                </div>
+                <!-- Остальные поля фильтрации -->
             </div>
-        </div>
-    </nav>
-
-    <div class="container">
-        {% block content %}{% endblock %}
+            <button type="submit" class="btn btn-primary mt-3">Фильтровать</button>
+            <a href="?" class="btn btn-secondary mt-3">Сбросить</a>
+        </form>
     </div>
+</div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% block scripts %}{% endblock %}
-</body>
-</html>
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Список транзакций</h5>
+        <a href="{% url 'dds:transaction_create' %}" class="btn btn-success btn-sm">Добавить</a>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <!-- Заголовки таблицы -->
+            <tbody>
+            {% for transaction in transactions %}
+            <tr>
+
+                <!-- Данные транзакции -->
+                <td>
+                    <p class="card-text">{{ transaction.date }}</p>
+                    <a href="{% url 'dds:transaction_edit' transaction.pk %}"
+                       class="btn btn-sm btn-warning">Исправить</a>
+                    <a href="{% url 'dds:transaction_delete' transaction.pk %}"
+                       class="btn btn-sm btn-danger">Удалить</a>
+                </td>
+
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Пагинация -->
+        {% if is_paginated %}
+        <nav>
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

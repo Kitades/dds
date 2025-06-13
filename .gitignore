@@ -1,5 +1,13 @@
-.venv/
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+venv/
+.env
+
+# IDE
 .idea/
-.coverage
-.idea db.sqlite3
- __pycache__
+.vscode/
+*.swp

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Управление справочниками{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Добавление элементов</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Тип справочника</label>
+                        {{ form.reference_type }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Название</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.name.errors|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3" id="parent-field" style="display: none;">
+                        <label class="form-label">Родительский элемент</label>
+                        {{ form.parent }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Существующие элементы</h5>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="referenceTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="status-tab" data-bs-toggle="tab" 
+                                data-bs-target="#status" type="button" role="tab">
+                            Статусы
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="type-tab" data-bs-toggle="tab" 
+                                data-bs-target="#type" type="button" role="tab">
+                            Типы
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="category-tab" data-bs-toggle="tab" 
+                                data-bs-target="#category" type="button" role="tab">
+                            Категории
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="subcategory-tab" data-bs-toggle="tab" 
+                                data-bs-target="#subcategory" type="button" role="tab">
+                            Подкатегории
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content mt-3" id="referenceTabsContent">
+                    <div class="tab-pane fade show active" id="status" role="tabpanel">
+                        <ul class="list-group">
+                            {% for status in references.statuses %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ status.name }}
+                                <form method="post" action="{% url 'dds:delete_reference' 'status' status.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </li>
+                            {% empty %}
+                            <li class="list-group-item">Нет статусов</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <!-- Аналогичные блоки для типов, категорий и подкатегорий -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Показываем/скрываем поле родителя в зависимости от типа справочника
+    $("#id_reference_type").change(function() {
+        const refType = $(this).val();
+        const parentField = $("#parent-field");
+        
+        if (refType === "category" || refType === "subcategory") {
+            parentField.show();
+        } else {
+            parentField.hide();
+        }
+    }).trigger("change");
+});
+</script>
+{% endblock %}
+{% endblock %}

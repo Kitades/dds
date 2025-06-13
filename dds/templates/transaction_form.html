@@ -1,53 +1,189 @@
-% extends "translation_list.html" %}
+{% extends "base.html" %}
+
+{% block title %}{{ form_title }}{% endblock %}
 
 {% block content %}
 <div class="card">
     <div class="card-header">
-        <h2>{% if form.instance.pk %}Редактирование{% else %}Создание{% endif %} транзакции</h2>
+        <h5>{{ form_title }}</h5>
     </div>
     <div class="card-body">
-        <form method="post">
+        <form method="post" novalidate>
             {% csrf_token %}
+
             <div class="row mb-3">
                 <div class="col-md-3">
-                    <label class="form-label">Дата</label>
-                    {{ form.date }}
+                    <div class="form-group">
+                        <label class="form-label">{{ form.date.label }}</label>
+                        {{ form.date }}
+                        {% if form.date.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.date.errors|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
+
                 <div class="col-md-3">
-                    <label class="form-label">Статус*</label>
-                    {{ form.status }}
+                    <div class="form-group">
+                        <label class="form-label">{{ form.status.label }}</label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.status.errors|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
+
                 <div class="col-md-3">
-                    <label class="form-label">Тип*</label>
-                    {{ form.type }}
+                    <div class="form-group">
+                        <label class="form-label">{{ form.type.label }}</label>
+                        {{ form.type }}
+                        {% if form.type.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.type.errors|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
+
                 <div class="col-md-3">
-                    <label class="form-label">Сумма (руб)*</label>
-                    {{ form.amount }}
+                    <div class="form-group">
+                        <label class="form-label">{{ form.amount.label }}</label>
+                        <div class="input-group">
+                            {{ form.amount }}
+                            <span class="input-group-text">₽</span>
+                        </div>
+                        {% if form.amount.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.amount.errors|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-            
+
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label class="form-label">Категория*</label>
-                    {{ form.category }}
+                    <div class="form-group">
+                        <label class="form-label">{{ form.category.label }}</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.category.errors|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
+
                 <div class="col-md-6">
-                    <label class="form-label">Подкатегория*</label>
-                    {{ form.subcategory }}
+                    <div class="form-group">
+                        <label class="form-label">{{ form.subcategory.label }}</label>
+                        {{ form.subcategory }}
+                        {% if form.subcategory.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.subcategory.errors|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-            
+
             <div class="mb-3">
-                <label class="form-label">Комментарий</label>
-                {{ form.comment }}
+                <div class="form-group">
+                    <label class="form-label">{{ form.comment.label }}</label>
+                    {{ form.comment }}
+                    {% if form.comment.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.comment.errors|join:", " }}
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-            
-            <button type="submit" class="btn btn-primary">Сохранить</button>
-            <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Отмена</a>
+
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Сохранить
+                </button>
+                <a href="{% url 'dds:transaction_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-lg"></i> Отмена
+                </a>
+            </div>
         </form>
     </div>
 </div>
 
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Динамическая загрузка категорий при изменении типа
+    $("#id_type").change(function() {
+        const typeId = $(this).val();
+        if (typeId) {
+            $.ajax({
+                url: "{% url 'dds:load_categories' %}",
+                data: {type_id: typeId},
+                success: function(data) {
+                    $("#id_category").html(data.html);
+                    $("#id_subcategory").empty();
+                },
+                error: function() {
+                    alert("Ошибка загрузки категорий");
+                }
+            });
+        } else {
+            $("#id_category").empty();
+            $("#id_subcategory").empty();
+        }
+    });
+
+    // Динамическая загрузка подкатегорий при изменении категории
+    $("#id_category").change(function() {
+        const categoryId = $(this).val();
+        if (categoryId) {
+            $.ajax({
+                url: "{% url 'dds:load_subcategories' %}",
+                data: {category_id: categoryId},
+                success: function(data) {
+                    $("#id_subcategory").html(data.html);
+                },
+                error: function() {
+                    alert("Ошибка загрузки подкатегорий");
+                }
+            });
+        } else {
+            $("#id_subcategory").empty();
+        }
+    });
+
+    // Инициализация значений при редактировании
+    {% if form.instance.pk %}
+    const typeId = $("#id_type").val();
+    if (typeId) {
+        $.ajax({
+            url: "{% url 'dds:load_categories' %}",
+            data: {type_id: typeId},
+            success: function(data) {
+                $("#id_category").html(data.html);
+                const categoryId = "{{ form.instance.category.id }}";
+                if (categoryId) {
+                    $("#id_category").val(categoryId);
+
+                    $.ajax({
+                        url: "{% url 'dds:load_subcategories' %}",
+                        data: {category_id: categoryId},
+                        success: function(data) {
+                            $("#id_subcategory").html(data.html);
+                            $("#id_subcategory").val("{{ form.instance.subcategory.id }}");
+                        }
+                    });
+                }
+            }
+        });
+    }
+    {% endif %}
+});
+</script>
 {% endblock %}
 {% endblock %}
